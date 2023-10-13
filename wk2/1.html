@@ -1,0 +1,35 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      background-color: gold;
+    }
+    body div#helloDiv {
+      color: blue;
+    }
+  </style>
+  <script>
+    window.onload = function () {
+      let personInput = document.getElementById('person')
+      let helloBtn = document.getElementById('helloBtn')
+      let helloDiv = document.getElementById('helloDiv')
+    
+      helloBtn.onclick = function () {
+        const name = personInput.value
+        helloDiv.innerHTML = `Hello, ${name}`
+      }
+    }
+  </script>
+</head>
+<body>
+  <div>
+    <input type="text" id="person" placeholder="Write your name here!" />
+    <input type="button" id="helloBtn" value="Click me!" />
+  </div>
+  <div id="helloDiv">Hello from the web!</div>
+</body>
+
+</html>
