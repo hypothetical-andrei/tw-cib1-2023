@@ -1,0 +1,94 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    window.onload = async () => {
+      const votes = document.getElementById('votes')
+      const category = document.getElementById('category')
+      const voteNumber = document.getElementById('voteNumber')
+      const addBtn = document.getElementById('addBtn')
+      let chart
+
+      addBtn.onclick = async () => {
+        try {
+          await fetch('http://localhost:8080/votes', {
+            method: 'post',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              category: category.value,
+              votes: voteNumber.value
+            })
+          })
+
+          const response = await fetch('http://localhost:8080/votes')
+          const data = await response.json()
+          votes.innerHTML = data.map(e => `<div>For color ${e.category} there are ${e.votes}</div>`).join('')
+        
+          const viz = document.getElementById('viz')
+  
+          const graphLabels = data.map(e => e.category)
+          const graphData = data.map(e => e.votes)
+          chart.data.labels = graphLabels
+          chart.data.datasets = [{
+            label: '# of Votes',
+            data: graphData,
+            borderWidth: 1
+          }]
+          chart.update()
+        } catch (error) {
+          console.log(error)
+        }
+      }
+
+      getData()
+
+      async function getData() {
+        const response = await fetch('http://localhost:8080/votes')
+        const data = await response.json()
+        votes.innerHTML = data.map(e => `<div>For color ${e.category} there are ${e.votes}</div>`).join('')
+        
+        const viz = document.getElementById('viz')
+  
+        const graphLabels = data.map(e => e.category)
+        const graphData = data.map(e => e.votes)
+  
+        chart = new Chart(viz, {
+          type: 'bar',
+          data: {
+            labels: graphLabels,
+            datasets: [{
+              label: '# of Votes',
+              data: graphData,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        })
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="votes"></div>
+  <div>
+    <canvas id="viz"></canvas>
+  </div>
+  <div>
+    <input type="text" id="category" placeholder="category" />
+    <input type="text" id="voteNumber" placeholder="votes" />
+    <input type="button" value="add" id="addBtn" />
+  </div>
+</body>
+</html>
