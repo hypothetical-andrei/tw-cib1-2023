@@ -1,0 +1,111 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="index.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script type="module">
+    import { reactive, html } from 'https://esm.sh/@arrow-js/core'
+    import dataStore from './data-store.mjs'
+
+    const { store } = dataStore
+
+    window.onload = async () => {
+      const root = document.getElementById('root')
+      const viz = document.getElementById('viz')
+
+      const data = reactive({
+        voteList: [],
+        candidate: {
+          category: '',
+          votes: 0
+        },
+        chart: {
+          labels: [],
+          data: []
+        }
+      })
+
+      const chart = new Chart(viz, {
+          type: 'bar',
+          data: {
+            labels:[],
+            datasets: [{
+              label: '# of Votes',
+              data: [],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        })
+
+      await store.getAll()
+      data.voteList = store.data
+
+      console.log(store.data)
+      chart.data.labels = store.data.map(e => e.category)
+      chart.data.datasets = [{
+        label: '# of Votes',
+        data: store.data.map(e => e.votes),
+        borderWidth: 1
+      }, {
+        label: '# of Votes adjusted',
+        data: store.data.map(e => e.votes - 2),
+        borderWidth: 1
+      }]
+      chart.update()
+
+      const addItem = async () => {
+        await store.addOne(data.candidate)
+        data.voteList = store.data
+        chart.data.labels = store.data.map(e => e.category)
+        chart.data.datasets = [{
+          label: '# of Votes',
+          data: store.data.map(e => e.votes),
+          borderWidth: 1
+        }]
+        chart.update()
+      }
+
+      const colorList = html`<div>
+        ${() => data.voteList.map(e => {
+          return html`<div class="positive">For ${e.category} we have ${e.votes} votes</div>`
+        })}
+      </div>`
+
+      const colorForm = html`<div>
+        <input type="text" placeholder="category" @input="${(evt) => {
+          data.candidate.category = evt.target.value
+        }}"/>
+        <input type="text"  placeholder="votes" @input="${(evt) => {
+          data.candidate.votes = evt.target.value
+        }}" />
+        <input type="button" value="add" @click="${() => addItem()}" />
+      </div>`
+
+      const voteList = html`
+        <h2>List of color votes</h2>
+        ${colorList}
+        ${colorForm}
+      `
+
+      voteList(root)
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <div>
+    <canvas id="viz"></canvas>
+  </div>
+</body>
+</html>
