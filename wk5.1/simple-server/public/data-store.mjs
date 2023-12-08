@@ -28,6 +28,31 @@ class DataStore {
       await this.getAll()
     }
   }
+
+  async deleteOne (id) {
+    const response = await fetch(`${SERVER}/votes/${id}`, {
+      method: 'delete'
+    })
+    if (!response.ok) {
+      throw response
+    }
+    await this.getAll()
+  }
+
+  async saveOne (id, item) {
+    const response = await fetch(`${SERVER}/votes/${id}`, {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(item)
+    })
+    if (!response.ok) {
+      throw response
+    } else {
+      await this.getAll()
+    }
+  }
 }
 
 const store = new DataStore()

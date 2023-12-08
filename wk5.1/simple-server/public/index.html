@@ -26,7 +26,8 @@
         chart: {
           labels: [],
           data: []
-        }
+        },
+        selected: 0
       })
 
       const chart = new Chart(viz, {
@@ -64,9 +65,7 @@
       }]
       chart.update()
 
-      const addItem = async () => {
-        await store.addOne(data.candidate)
-        data.voteList = store.data
+      const redrawChart = () => {
         chart.data.labels = store.data.map(e => e.category)
         chart.data.datasets = [{
           label: '# of Votes',
@@ -76,9 +75,55 @@
         chart.update()
       }
 
+      const addItem = async () => {
+        await store.addOne(data.candidate)
+        data.voteList = store.data
+        redrawChart()
+      }
+
+      const deleteItem = async (id) => {
+        await store.deleteOne(id)
+        data.voteList = store.data
+        redrawChart()
+      }
+
+      const selectItem = (id) => {
+        data.selected = id
+      }
+
+      const cancelItem = () => {
+        data.selected = 0
+      }
+
+      const saveItem = async (id) => {
+        await store.saveOne(id, data.candidate)
+        data.selected = 0
+        data.voteList = store.data
+        redrawChart()
+      }
+
       const colorList = html`<div>
         ${() => data.voteList.map(e => {
-          return html`<div class="positive">For ${e.category} we have ${e.votes} votes</div>`
+          if (e.id  === data.selected) {
+            return html`
+              <input type="text" placeholder="category" @input="${(evt) => {
+                data.candidate.category = evt.target.value
+              }}" value="${e.category}" />
+              <input type="text"  placeholder="votes" @input="${(evt) => {
+                data.candidate.votes = evt.target.value
+              }}" value="${e.votes}" />
+              <input type="button" value="save" @click="${() => saveItem(e.id)}" />
+              <input type='button' value='cancel' @click="${() => cancelItem()}"/>
+            `
+          } else {
+            return html`
+              <div class="positive">
+                For ${e.category} we have ${e.votes} votes
+                <input type='button' value='delete' @click="${() => deleteItem(e.id)}"/>
+                <input type='button' value='select' @click="${() => selectItem(e.id)}"/>
+              </div>
+            `
+          }
         })}
       </div>`
 

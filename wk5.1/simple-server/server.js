@@ -74,4 +74,34 @@ app.post('/votes', async  (req, res) => {
   }
 })
 
+app.delete('/votes/:id', async (req, res) => {
+  try {
+    const vote = await VoteRecord.findByPk(req.params.id)
+    if (vote) {
+      await vote.destroy()
+      res.status(204).json({ message: 'deleted' })
+    } else {
+      res.status(404).json({ message: 'not found' })
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: 'server error' })
+  }
+})
+
+app.put('/votes/:id', async (req, res) => {
+  try {
+    const vote = await VoteRecord.findByPk(req.params.id)
+    if (vote) {
+      await vote.update(req.body)
+      res.status(202).json({ message: 'updated' })
+    } else {
+      res.status(404).json({ message: 'not found' })
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: 'server error' })
+  }
+})
+
 app.listen(8080)
